@@ -35,7 +35,7 @@ class Chart():
         html += '"data": ' + ydataset + ',\n'
         html += '}]\n'
         html += '}\n'
-        html += 'window.onload = function() {\n'
+        html += '$(document).ready(function () {\n'
         html += 'var ctx = document.getElementById("canvas_' + \
             slug + '").getContext("2d");\n'
         html += 'window.myBar = new Chart(ctx, {\n'
@@ -52,8 +52,8 @@ class Chart():
         html += '}\n'
         html += '}\n'
         html += '}); \n'
-        html += '};\n'
-        html += 'window.onload = function() {'
+        html += '});;\n'
+        html += '$(document).ready(function () {'
         html += 'var ctx = document.getElementById("canvas_' + \
             slug + '").getContext("2d");'
         html += 'window.myBar = new Chart(ctx, {'
@@ -70,7 +70,7 @@ class Chart():
         html += '}'
         html += '}'
         html += '});'
-        html += '};'
+        html += '});'
         html += '</script>\n'
         return html
 
