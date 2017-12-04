@@ -1,4 +1,6 @@
 import json
+import pandas as pd
+from dataswim.charts.colors import palette
 
 
 class Chart():
@@ -6,39 +8,67 @@ class Chart():
     Class to handle Chartjs charts
     """
 
-    def bar(self, slug, xdata, ydata, label=None, opts={}, style={}):
+    def _get_dataset(self, dataset, name, color):
         """
-        Returns html for a bar chart
+        Encode a dataset
         """
-        html = self._chart(slug, xdata, ydata, label, opts, style, "bar")
+        html = "{"
+        html += '\t"label": "' + name + '",'
+        html += '"backgroundColor": "' + color + '",\n'
+        html += '"data": ' + self._format_list(dataset) + ',\n'
+        html += "}"
         return html
 
-    def line(self, slug, xdata, ydata, label=None, opts={}, style={}):
-        """
-        Returns html for a line chart
-        """
-        html = self._chart(slug, xdata, ydata, label, opts, style, "line")
-        return html
-
-    def _chart(self, slug, xdata, ydata, label, opts, style, ctype):
+    def get(self, slug, xdata, ydatasets, label, opts, style, ctype):
         """
         Returns html for a chart
         """
-        data = json.dumps(xdata)
         xdataset = self._format_list(xdata)
-        ydataset = self._format_list(ydata)
-        html = '<div><canvas id="canvas_' + slug + '"></canvas></div>\n'
+        width = "100%"
+        height = "300px"
+        if style:
+            if "width" in opts:
+                width = str(opts["width"])
+            if "height" in opts:
+                height = str(opts["height"])
+        stylestr = '<style>#canvas_' + slug + \
+            ' { width:' + width + ' !important; height:' + \
+            height + ' !important}</style>'
+        html = stylestr
+        html += '<div><canvas id="canvas_' + slug + '"></canvas></div>\n'
         html += '<script>\n'
-        html += 'var chartData = {\n'
+        html += 'var data = {\n'
         html += 'labels: ' + xdataset + ',\n'
-        html += 'datasets:[{\n'
-        if label is not None:
-            html += '\t"label": "' + label + '",'
-        # html += '"backgroundColor": ["#3e95cd",
-        # "#8e5ea2","#3cba9f","#e8c3b9","#c45850"],\n'
-        html += '"backgroundColor": "firebrick",\n'
-        html += '"data": ' + ydataset + ',\n'
-        html += '}]\n'
+        html += 'datasets:[\n'
+        i = 0
+        color = "firebrick"
+        colors = None
+        if "color" in style:
+            if type(style["color"]) == list:
+                colors = style["color"]
+            else:
+                color = style["color"]
+        for name in ydatasets:
+            dcolor = color
+            if colors is not None:
+                try:
+                    dcolor = colors[i]
+                except:
+                    try:
+                        dcolor = palette[i]
+                    except:
+                        dcolor = palete[0]
+            else:
+                try:
+                    dcolor = palette[i]
+                except:
+                    dcolor = palete[0]
+            data = ydatasets[name]
+            html += self._get_dataset(data, name, dcolor)
+            if i < len(ydatasets) - 1:
+                html += ","
+            i += 1
+        html += ']\n'
         html += '}\n'
 
         html += '$(document).ready(function () {'
@@ -46,19 +76,30 @@ class Chart():
             slug + '").getContext("2d");'
         html += 'window.myChart = new Chart(ctx, {'
         html += 'type: "' + ctype + '",'
-        html += 'data: chartData,'
+        html += 'data: data,'
         html += 'options: {'
+        html += 'spanGaps: false,'
         html += 'responsive: true,'
-        html += 'legend: {'
-        html += 'position: "top",'
-        html += '},'
-        html += 'title: {'
-        html += 'display: true,'
-        if label is not None:
-            html += 'text: "' + label + '"'
-        html += '}'
+        html += 'maintainAspectRatio: false,'
+        if "legend" in opts:
+            html += 'legend: {'
+            html += 'position: "' + opts["legend"] + '",'
+            html += '},'
+        else:
+            html += 'legend: {'
+            html += 'display: false,'
+            html += '},'
+        if "title" in opts:
+            html += 'title: {'
+            html += 'display: true,'
+            html += 'text: "' + opts["title"] + '"'
+            html += '}'
         html += '}'
         html += '});'
+        # try not to print null or zero points
+        #html += '\nfor (var i = 1; i <= data.datasets[0].data.length - 1; i++)'
+        #html += '\nif (data.datasets[0].data[i - 1] === data.datasets[0].data[i])'
+        #html += '\nmyChart.datasets[0].data[i].display = false;'
         html += '});'
         html += '</script>\n'
         return html
@@ -67,15 +108,18 @@ class Chart():
         """
         Format a list to use in javascript
         """
-        dtype = type(data[0])
         dataset = "["
-        i = 1
+        i = 0
         for el in data:
-            if dtype == int or dtype == float:
-                dataset += str(el)
+            if pd.isnull(el):
+                dataset += "null"
             else:
-                dataset += '"' + el + '"'
-            if i < len(data):
+                dtype = type(data[i])
+                if dtype == int or dtype == float:
+                    dataset += str(el)
+                else:
+                    dataset += '"' + el + '"'
+            if i < len(data) - 1:
                 dataset += ', '
         dataset += "]"
         return dataset
