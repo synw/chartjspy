@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 
-version = "0.1"
+version = "0.1.2"
 
 setup(
     name='chartjspy',
@@ -12,7 +12,7 @@ setup(
     author_email='synwe@yahoo.com',
     url='https://github.com/synw/chartjspy',
     download_url='https://github.com/synw/chartjspy/releases/tag/' + version,
-    keywords=['errors', "error_handling"],
+    keywords=['charts', 'chartjs'],
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
