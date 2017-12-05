@@ -1,6 +1,8 @@
 import json
 import pandas as pd
-from dataswim.charts.colors import palette
+
+palette = ["#15527F", "#FF9900", "#FFCC00", "#0099CC", "#999900", "#663366",
+           "#FF0000", "#33CC99", "#006600", "#663300", "#99CC00", "#FF0033"]
 
 
 class Chart():
@@ -96,10 +98,6 @@ class Chart():
             html += '}'
         html += '}'
         html += '});'
-        # try not to print null or zero points
-        #html += '\nfor (var i = 1; i <= data.datasets[0].data.length - 1; i++)'
-        #html += '\nif (data.datasets[0].data[i - 1] === data.datasets[0].data[i])'
-        #html += '\nmyChart.datasets[0].data[i].display = false;'
         html += '});'
         html += '</script>\n'
         return html
